@@ -70,7 +70,9 @@ SocketServer.on("request",(req)=>{
                     data:message
                 }
                 for(let i in CONNECTIONS){
-                    CONNECTIONS[i].send(JSON.stringify(RES));
+                    if(CONNECTIONS[i].username){
+                        CONNECTIONS[i].send(JSON.stringify(RES));
+                    }
                 }
             }
             else if(REQ.type == "username"){
@@ -80,11 +82,21 @@ SocketServer.on("request",(req)=>{
                 USERNAMES.push(CONNECTION.username);
 
                 console.log("Username registered ",CONNECTION.username)
+
                 let RES = {
                     type:"Registration Response",
                     data:CONNECTION.username
                 }
                 CONNECTION.send(JSON.stringify(RES));
+
+                // another response to let everyone know that a new person has joined the chat
+                RES.type = "User Joining"
+                
+                for(let i in CONNECTIONS){
+                    if(CONNECTIONS[i].username){
+                        CONNECTIONS[i].send(JSON.stringify(RES));
+                    }
+                }
             }
 
         } else{
