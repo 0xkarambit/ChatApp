@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>WebSockets - Simple chat</title>
+    <!-- <link rel="stylesheet" href="style.css"> -->
+    <style>
+    * { font-family:tahoma; font-size:12px; padding:0px;margin:0px;}
+    p { line-height:18px; }
+    div { width:500px; margin-left:auto; margin-right:auto;}
+    #mainframe,#registration-frame{ width:auto;margin-left:auto;margin-right:auto}
+    #content { padding:5px; background:#ddd; border-radius:5px;
+        overflow-y: scroll; border:1px solid #CCC;
+        margin-top:10px; height: 460px;width:950px; }
+    #input { border-radius:2px; border:1px solid #ccc;
+        margin-top:10px; padding:5px; width:400px;
+    }
+    #status { width:88px;display:block;float:left;margin-top:15px; }
+    .message{
+    color:red;
+    font-family: 'Courier New', Courier, monospace;
+    font-size:18px;
+    max-width:400px;
+    overflow: hidden;
+    }
+
+    #input { 
+        border-radius:2px; border:1px solid #ccc;
+        margin-top:10px; padding:5px; width:400px;
+    }
+
+    button{
+        color:white;
+        background-color: #184593;
+        border-radius:15px;
+        text-align: center;
+        padding:12px;
+        border:10xp solid black;
+    }
+  </style>
+  </head>
+  <body>
+
+    <div id="registration-frame">
+      <div>
+        Username:<textarea id="username" type="text" oninput="namemelater(this)"></textarea>>
+      </div>
+    </div>
+
+    <div id="mainframe" hidden>
+    <div id="content"></div>
+    <div>
+      <span id="status">Connecting...</span>
+      <textarea type="text" id="input" oninput="namemelater(this)"></textarea>
+      <button type="submit" onclick="send(this)" disabled>send message</button>
+      <button type="button" onclick="ws.close()">close connection</button>
+    </div>
+    </div>
+  <script>
+
+      // for making mobile friendly
+      let h = new URL(window.location.href).host;
+      // code...
+      const ws = new WebSocket("ws://"+h)
+
+      const clientMessages = []
+      let Username = "";
+
+      ws.onerror = (e)=>{
+        document.write(JSON.stringify(e))
+      }
+
+      ws.onopen = (e)=>{
+          console.info("connected");
+          let elm = document.querySelector("#status");
+          elm.innerHTML = "connected!";
+          elm.setAttribute("disabled","false");
+      }
+
+      ws.onclose = (e)=>{
+          // connection closed
+          let elm = document.querySelector("#status");
+          elm.innerHTML = "Connection Closed";
+          elm.setAttribute("disabled","true");
+      }
+
+      ws.onmessage = (m)=>{
+        let RES = JSON.parse(m.data);
+        if(RES.type == "message"){
+          let p = document.createElement("p");
+          p.innerHTML = RES.data;
+          clientMessages.push(RES.data);
+          p.classList += "message";
+          document.querySelector("#content").prepend(p);
+          // if .content contains any element
+          if(document.querySelector("#content").childElementCount >= 1){
+            let lb = document.createElement("p");
+            lb.innerText = "-".repeat(100);
+            document.querySelector("#content").prepend(lb);
+          }
+        }
+
+        if(RES.type == "Registration Response"){
+          if(RES.data){
+            Username = RES.data; 
+          }
+          // USER SHOULD ONLY BE ALLOWED TO CHAT AFTER THIS REGISTRATION
+          document.getElementById("registration-frame").setAttribute("hidden","true")
+          document.getElementById("mainframe").removeAttribute("hidden")
+          document.getElementById("input").focus()
+        }
+      }
+      
+      window.onload = ()=>{
+        document.querySelector("#username").focus();
+      }
+
+      /*
+      APPROVED TYPE VALUES:
+      1.message
+      2.username
+      */
+
+      function send(DATA,type){
+          if(ws.readyState == 1){
+            let REQ = {
+              type:type,
+              data:DATA
+            }
+            ws.send(JSON.stringify(REQ));
+          }else{
+            window.alert("connection has already been closed")
+          }
+      }
+      function namemelater(e)
+      {
+          key = e.value[e.value.length-1];
+          if(key)
+          {
+            if(e.id == "username" && key.charCodeAt(0) == 10 && e.value.trim().length >= 1)
+            {
+              send(e.value,"username")
+              e.value = "";
+            }
+            else if(key.charCodeAt(0) == 10 && e.value.trim().length >= 1)
+            {  
+              send(e.value,"message");
+              e.value = "";
+            }
+          }
+      }
+
+      function getDate(){
+          let d = new Date;
+          return `${d.toLocaleTimeString()} ${d.toLocaleDateString()}`
+      }
+
+    </script>
+  </body>
+</html>
