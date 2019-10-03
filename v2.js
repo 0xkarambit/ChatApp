@@ -46,6 +46,17 @@ SocketServer.on("request",(req)=>{
     })
 
     CONNECTION.on("close",()=>{
+        let RES = {
+            type:"User Leaving",
+            data: "<span class='other-usernames'>" + CONNECTION.username + "</span> has left the chat"
+        }
+        
+        for(let i in CONNECTIONS){
+            if(CONNECTIONS[i].username){
+                CONNECTIONS[i].send(JSON.stringify(RES));
+            }
+        }
+
         CONNECTIONS.splice(CONNECTIONS.indexOf(CONNECTION), 1);
         USERNAMES.splice(USERNAMES.indexOf(CONNECTION.username), 1);
         console.log(`\x1b[91m${new Date()} \nconnection disconnected : ${CONNECTIONS.length} socket(s) connected\x1b[0m`);    })
@@ -91,9 +102,10 @@ SocketServer.on("request",(req)=>{
 
                 // another response to let everyone know that a new person has joined the chat
                 RES.type = "User Joining"
+                RES.data = "<span class='other-usernames'>" + RES.data + "</span> has joined the chat"
                 
                 for(let i in CONNECTIONS){
-                    if(CONNECTIONS[i].username){
+                    if(CONNECTIONS[i].username !== CONNECTION.username){
                         CONNECTIONS[i].send(JSON.stringify(RES));
                     }
                 }

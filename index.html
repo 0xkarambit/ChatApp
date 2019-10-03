@@ -112,7 +112,21 @@
         }
 
         if(RES.type == "User Joining"){
+          const p = document.createElement("p");
+          p.innerHTML = RES.data;
+          p.style.backgroundColor = "purple";
+          p.style.color = "white"
+          document.getElementById("content").prepend(p);
           
+        }
+
+        if (RES.type == "User Leaving") {
+          const p = document.createElement("p");
+          p.innerHTML = RES.data;
+          p.style.backgroundColor = "red";
+          p.style.color = "white"
+          document.getElementById("content").prepend(p);
+
         }
       }
       

@@ -1,6 +1,6 @@
 Things To DO
 
-make a good looking GUI for the application
+responsive chat layout
 adding different functions to eventListeners
 fixing the early connection 
 adding DM(s)
